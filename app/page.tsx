@@ -1,13 +1,10 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
-import Link from 'next/link';
 import Image from 'next/image';
 import { registerComparisonTool } from '@/lib/webmcp';
 import {
   ArrowRight,
-  FileText,
-  ShieldCheck,
   TriangleAlert,
   Check,
   Download,
@@ -138,7 +135,7 @@ export default function Home() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <Link href="/" aria-label="MedDelta home">
+        <div>
           <Image
             src="/meddelta-logo.png"
             alt="MedDelta"
@@ -147,7 +144,7 @@ export default function Home() {
             height={1280}
             unoptimized
           />
-        </Link>
+        </div>
         <div className="top-divider" />
         <span className="workspace-label">Discharge review</span>
         <span className="demo-pill">SYNTHETIC DEMO</span>
@@ -155,18 +152,13 @@ export default function Home() {
       <main>
         <div className="intro">
           <div>
-            <p className="eyebrow">MEDICATION CONSISTENCY</p>
-            <h1>
-              One patient. Two documents.
-              <br />
-              <span>One clear plan.</span>
-            </h1>
+            <h1>Review medication instructions</h1>
             <p>
-              Compare the instructions. Inspect the evidence. Record a review.
+              Compare both documents, inspect each finding, and record the next
+              action.
             </p>
           </div>
           <div className="scope-note">
-            <ShieldCheck size={20} />
             <div>
               <strong>A review aid, not a treatment decision</strong>
               <p>
@@ -224,7 +216,6 @@ export default function Home() {
               <div className="document-head">
                 <span className="document-letter">{i === 0 ? 'A' : 'B'}</span>
                 <h2>{labels[i]}</h2>
-                <FileText size={18} />
               </div>
               <Textarea
                 aria-label={labels[i]}
@@ -261,7 +252,6 @@ export default function Home() {
         </div>
         <div className="review-heading">
           <div>
-            <p className="eyebrow">EVIDENCE FIRST</p>
             <h2
               ref={resultsHeading}
               tabIndex={-1}
@@ -281,7 +271,8 @@ export default function Home() {
             </span>
             <span className="count">{uncertain} need clarification</span>
             <span className="count">
-              {report.facts.length} extracted instructions
+              {Object.keys(decisions).length} of {report.findings.length}{' '}
+              medications reviewed
             </span>
           </div>
         </div>
@@ -393,6 +384,9 @@ export default function Home() {
                       <SelectValue placeholder="Choose an outcome" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="consistent-reviewed">
+                        Reviewed — instructions match within checked scope
+                      </SelectItem>
                       <SelectItem value="clarification-requested">
                         Clarification requested
                       </SelectItem>
@@ -413,6 +407,11 @@ export default function Home() {
                     disabled={dirty}
                     maxLength={2000}
                   />
+                  <p>
+                    {dirty
+                      ? 'Compare the edited documents before recording a review.'
+                      : 'Choose an outcome and add a reason to save this medication review.'}
+                  </p>
                   <div className="resolution-actions">
                     <Button
                       onClick={save}
@@ -452,7 +451,7 @@ export default function Home() {
         )}
         <section className="bottom-row">
           <details>
-            <summary>What this prototype can—and cannot—check</summary>
+            <summary>Supported instructions and demo limits</summary>
             <div className="limits">
               <p>
                 Deterministic extraction, not an AI clinical model. Use one
@@ -477,7 +476,7 @@ export default function Home() {
             </div>
           </details>
           <Button variant="outline" onClick={download} disabled={dirty}>
-            <Download /> Export demo review
+            <Download /> Download review (JSON)
           </Button>
         </section>
         <footer>

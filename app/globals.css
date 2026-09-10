@@ -106,7 +106,7 @@ main {
   justify-content: space-between;
   align-items: center;
   gap: 40px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 .eyebrow {
   font-size: 12px;
@@ -116,7 +116,7 @@ main {
   margin: 0 0 9px;
 }
 h1 {
-  font-size: 36px;
+  font-size: 28px;
   letter-spacing: -1.1px;
   line-height: 1.15;
   margin: 0 0 12px;
