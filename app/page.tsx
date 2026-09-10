@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -42,6 +42,8 @@ export default function Home() {
   const [note, setNote] = useState('');
   const [outcome, setOutcome] = useState('');
   const [notice, setNotice] = useState('');
+  const [comparisonCount, setComparisonCount] = useState(0);
+  const resultsHeading = useRef<HTMLHeadingElement>(null);
   const current = cases.find((c) => c.id === caseId);
   const finding =
     report.findings.find((f) => f.id === selected) ?? report.findings[0];
@@ -62,6 +64,7 @@ export default function Home() {
     setNote('');
     setOutcome('');
     setNotice('');
+    setComparisonCount(0);
   }
   function applyComparison(input: [string, string]) {
     const r = reconcile(input);
@@ -72,10 +75,16 @@ export default function Home() {
     setNote('');
     setOutcome('');
     setNotice('Comparison updated. Previous review decisions cleared.');
+    setComparisonCount((count) => count + 1);
     return r;
   }
   function analyze() {
-    applyComparison(docs);
+    flushSync(() => applyComparison(docs));
+    resultsHeading.current?.focus({ preventScroll: true });
+    resultsHeading.current?.scrollIntoView({
+      block: 'start',
+      behavior: 'instant',
+    });
   }
   useEffect(
     () =>
@@ -239,10 +248,12 @@ export default function Home() {
           ))}
         </section>
         <div className="actionbar">
-          <span>
+          <span role="status" aria-live="polite" aria-atomic="true">
             {dirty
               ? 'Documents changed — results below are out of date.'
-              : 'Two documents ready for comparison.'}
+              : comparisonCount > 0
+                ? `Comparison ${comparisonCount} complete. ${conflicts} conflict${conflicts === 1 ? '' : 's'} found; ${uncertain} need clarification.`
+                : 'Example results are shown below. Edit either document, then compare.'}
           </span>
           <Button onClick={analyze} className="compare">
             Compare instructions <ArrowRight size={18} />
@@ -251,7 +262,18 @@ export default function Home() {
         <div className="review-heading">
           <div>
             <p className="eyebrow">EVIDENCE FIRST</p>
-            <h2>Review the differences</h2>
+            <h2
+              ref={resultsHeading}
+              tabIndex={-1}
+              style={{ scrollMarginTop: '24px' }}
+            >
+              Review the differences
+            </h2>
+            {comparisonCount > 0 && !dirty && (
+              <p className="comparison-complete">
+                Comparison {comparisonCount} complete · Results refreshed
+              </p>
+            )}
           </div>
           <div className="counts">
             <span className="count conflict">
